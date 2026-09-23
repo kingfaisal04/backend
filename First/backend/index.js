@@ -11,7 +11,7 @@ require("dotenv").config();
 const server = express();
 
 // Read PORT, convert it to a number, and use 5000 when it is not configured.
-const PORT = Number(process.env.PORT) || 5000;
+const PORT = Number(process.env.PORT || 5000);
 
 // Read the MongoDB connection string from the loaded environment variables.
 const MONGO_URL = process.env.MONGO_URL;
