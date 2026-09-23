@@ -1,77 +1,55 @@
-// const UserMode = require("../mode/user")
+// Import the Mongoose model used to store users.
+const UserModel = require("../model/user");
 
+// Import request validation helpers.
+const { validationResult } = require("express-validator");
 
-// const createUser = async (req, res) => {
-//   try {
-//     const student = await UserModel.create(req.body)
-//     console.log(req)
-// res.status(201).json({id: user._id, username: user.username, email: user.email })
-//   } catch (error) {
-//     res.status(400).json({ message: error.message })
-//   }
+// Define the asynchronous controller that registers a new user account.
+const register = async (req, res) => {
+  // Begin handling validation and database operations.
+  try {
+    // Read validation results created by the route middleware.
+    const errors = validationResult(req);
 
-// }
-
-// module.export={register}
-
-
-
-
-
-const UserModel = require("../model/user")
-const { validationResult } = require("express-validator")
-const jwt = require("jsonwebtoken")
-
-
-const signupController = (req,res)=>{
-    try {
-        const errors = validationResult(req)
-
-        if(!errors.isEmpty()){
-            return res.status(400).json({
-                message: errors.array()[0].msg,
-                errors: errors.array()
-            })
-        }
-
-        const {username, email , password} = req.body;
-
-        const extinguishUser = UserModel.findOne({email});
-
-        if (extinguishUser){
-          return res.status(400).json({
-            message: "User already exist"
-        });
-        
-
-        }
-        
-        const hashedPassword = bcrypt.hashSync(password, 10);
-
-
-
-
-
-
-        // check if user exist
-    const  extinguisher = User.findOne()
-      }catch (error) {
-
-
-
+    // Check whether any request fields failed validation.
+    if (!errors.isEmpty()) {
+      // Return the first validation message and the complete error list.
+      return (
+        res
+          // Set the response status to indicate invalid client input.
+          .status(400)
+          // Send validation details as a JSON response.
+          .json({ message: errors.array()[0].msg, errors: errors.array() })
+      );
     }
-}
 
+    // Extract only the fields required by the user schema.
+    const { name, email, password } = req.body;
 
+    // Search for an existing account with the same email address.
+    const existingUser = await UserModel.findOne({ email });
 
-const register = async (req,res) => {
-    try {
-        const user = await UserModel.create(req.body)
-        res.status(201).json({id: user._id,username: user.username, email: user.email});
-    } catch (error) {
-        res.status
+    // Check whether the email address is already registered.
+    if (existingUser) {
+      // Return a conflict response instead of creating a duplicate account.
+      return res.status(409).json({ message: "User already exists" });
     }
-}
 
+    // Create the user; the model hook hashes the password before saving.
+    const user = await UserModel.create({ name, email, password });
 
-module.exports={ register}
+    // Return the new user's public fields without exposing the password hash.
+    res.status(201).json({ id: user._id, name: user.name, email: user.email });
+    // Handle validation, database, and unexpected controller errors.
+  } catch (error) {
+    // Begin constructing the client-error response.
+    res
+      // Set the response status to indicate the request could not be processed.
+      .status(400)
+      // Return a readable message and the underlying error detail.
+      .json({ message: "Error creating user", error: error.message });
+  }
+};
+
+// Export the registration controller for use by the authentication routes.
+module.exports = { register };

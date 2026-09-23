@@ -1,0 +1,9 @@
+{
+  "name": "backend-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node First/backend/index.js",
+    "dev": "nodemon First/backend/index.js"
+  }
+}

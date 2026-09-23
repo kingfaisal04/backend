@@ -1,13 +1,14 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "khodz-backend",
+  "name": "Faisal",
   "version": "1.0.0",
   "description": "Backend for khodz network",
   "main": "index.js",
   "author": "RdGreatest",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

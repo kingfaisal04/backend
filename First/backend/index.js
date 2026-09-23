@@ -1,39 +1,62 @@
-// importing express
-const express = require('express');
-// install mongoose
-const mongoose = require('mongoose');
+// Import the Express framework used to create the HTTP server.
+const express = require("express");
 
-// import dotenv
-require("dotenv").config()
+// Import Mongoose used to connect the application to MongoDB.
+const mongoose = require("mongoose");
 
-// create the server
-const server = express()
+// Import and immediately configure dotenv to load variables from .env.
+require("dotenv").config();
 
-// PORT NUMBER
-const PORT = process.env.PORT
+// Create an Express application.
+const server = express();
 
-// MongoDB
-const MONGO_URL = process.env.MONGO_URL
+// Read PORT, convert it to a number, and use 5000 when it is not configured.
+const PORT = Number(process.env.PORT) || 5000;
 
-//Middleware
-server.use(express.json())
+// Read the MongoDB connection string from the loaded environment variables.
+const MONGO_URL = process.env.MONGO_URL;
 
-// import the routes
-const userRoutes = require("./Routes/usersRoutes")
-const authRoutes = require("./Routes/authRoutes")
+// Check whether the required MongoDB connection string was provided.
+if (!MONGO_URL) {
+  // Report the missing environment variable to the terminal.
+  console.error("MONGO_URL is not configured");
+  // Stop the process because the server cannot function without MongoDB.
+  process.exit(1);
+}
 
-// register route
-server.use(userRoutes)
-server.use(authRoutes)
+// Parse JSON request bodies.
+server.use(express.json());
 
-mongoose.connect(MONGO_URL)
+// Import the routes that manage student resources.
+const userRoutes = require("./Routes/usersRoutes");
+
+// Import the routes that manage authentication resources.
+const authRoutes = require("./Routes/authRoutes");
+
+// Register the student routes with the Express application.
+server.use(userRoutes);
+
+// Register the authentication routes with the Express application.
+server.use(authRoutes);
+
+// Start a Mongoose connection using the configured MongoDB URL.
+mongoose
+  // Pass the MongoDB URL to Mongoose.
+  .connect(MONGO_URL)
+  // Run this callback after MongoDB connects successfully.
   .then(() => {
-    console.log("MongoDB connected Successfully")
+    // Confirm that the database connection succeeded.
+    console.log("MongoDB connected successfully");
+    // Start accepting HTTP requests on the configured port.
     server.listen(PORT, () => {
-      console.log("Server started on port " + PORT)
-    })
+      // Confirm that the HTTP server is listening.
+      console.log("Server started on port " + PORT);
+    });
   })
+  // Run this callback when the MongoDB connection fails.
   .catch((err) => {
-    console.error("MongoDB connection failed", err.message)
-  })
-
+    // Display the database error message for troubleshooting.
+    console.error("MongoDB connection failed", err.message);
+    // Mark the process as failed before it exits.
+    process.exitCode = 1;
+  });
